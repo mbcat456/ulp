@@ -1,0 +1,6 @@
+append.example.com:newuser1:newpw1
+netflix.com:newuser2:newpw2
+roblox.com|newpipe|newpipepw
+bare append line
+shared.example.org:user090:pass090
+append.example.com:newuser1:newpw1
