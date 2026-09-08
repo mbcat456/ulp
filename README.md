@@ -1,11 +1,10 @@
-# ULP — Unified Leak Pool (.ulp)
+# ULP: Unified Leak Pool (.ulp)
 
-[![CI](https://github.com/mbcat456/ulp/actions/workflows/ci.yml/badge.svg)](https://github.com/mbcat456/ulp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A self-contained, lossless, searchable credential-store format + toolchain for
 `url:username:password` combo lists. Built entirely from raw Rust (std only, no
-crates, no zstd/flate) — compression and indexing are hand-rolled for this data.
+crates, no zstd/flate), compression and indexing are hand-rolled for this data.
 
 **Why it exists:** a `.txt` combo list is huge and every lookup is a full linear
 scan. `.ulp` is smaller on disk *and* answers url / username / password lookups in
@@ -48,7 +47,7 @@ cargo build --release
 
 ### Linux / Unix
 
-The code is cross-platform out of the box via `#[cfg]` — no manual edits needed:
+The code is cross-platform out of the box via `#[cfg]`; no manual edits needed:
 
 ```bash
 cargo build --release
@@ -71,7 +70,7 @@ code as its `ulp` subcommand group.
 
 ## Quick start
 
-> The binary is `ulp` on Linux/macOS and `ulp.exe` on Windows — commands below use
+> The binary is `ulp` on Linux/macOS and `ulp.exe` on Windows; commands below use
 > `./ulp` (substitute `./ulp.exe` on Windows).
 
 ```bash
@@ -103,7 +102,7 @@ code as its `ulp` subcommand group.
 - `match db.ulp prefix "netflix"` matches domains starting with `netflix`.
 - `match db.ulp user suffix "@qq.com"` returns every account whose email ends in
   `@qq.com`; `match db.ulp user prefix "admin"` matches emails starting with `admin`.
-  (Suffix is the fast path — the username dict is stored reversed, so it's a prefix
+  (Suffix is the fast path: the username dict is stored reversed, so it's a prefix
   lookup over the reversed index.)
 
 Every query returns full, byte-exact `url:user:pass` lines. Results are **deduplicated**
@@ -112,7 +111,7 @@ Every query returns full, byte-exact `url:user:pass` lines. Results are **dedupl
 
 ### Save results to a file
 
-The cleanest, shell-independent way is the `-o` flag — the tool writes the file
+The cleanest, shell-independent way is the `-o` flag; the tool writes the file
 itself as raw UTF-8, bypassing the shell's redirection entirely:
 
 ```bash
@@ -122,7 +121,7 @@ itself as raw UTF-8, bypassing the shell's redirection entirely:
 ```
 
 Timing + `found/dupes/saved` still print to stderr. Plain redirection (`>`) also
-works — the tool always emits UTF-8 to stdout — but each shell's `>` re-encodes
+works, but the tool always emits UTF-8 to stdout while each shell's `>` re-encodes
 differently (PowerShell writes UTF-16), so prefer `-o` for byte-exact output.
 
 ### Frames output (`--frames`)
@@ -168,7 +167,7 @@ It walks the file structurally from offset 0: header, section offsets, misc entr
 
 ## Guided build (`guide`)
 
-Point it at a folder (or a list of files) and it figures out chunking for you — no
+Point it at a folder (or a list of files) and it figures out chunking for you: no
 manual batching, no hand-splitting a 30 GB file:
 
 ```bash
@@ -178,18 +177,18 @@ manual batching, no hand-splitting a 30 GB file:
 
 It does this, in order:
 
-1. **Detects RAM** — `GlobalMemoryStatusEx` on Windows, `/proc/meminfo` on Linux.
+1. **Detects RAM** with `GlobalMemoryStatusEx` on Windows and `/proc/meminfo` on Linux.
 2. **Picks a chunk size** from total + free RAM:
-   - **Floor** scales with total RAM (it won't go below this — Windows frees RAM for
+   - **Floor** scales with total RAM (it won't go below this; Windows frees RAM for
      you): 32 GB → 5 GB, 24 → 4 GB, 16 → 3 GB, 8 → 2 GB, else 1 GB.
    - If free RAM is generous it scales **up**: `chunk ≈ (free − 4 GB) / 1.8`, capped at
      16 GB (peak build RAM is ~1.8× the chunk size).
-3. **Expands folders** — recurses into any folder argument (non-ASCII filenames handled).
-4. **Splits oversized files** — anything bigger than the chunk size is split at **line
+3. **Expands folders** and recurses into any folder argument (non-ASCII filenames handled).
+4. **Splits oversized files** when anything bigger than the chunk size is split at **line
    boundaries** (no partial lines) into a `.split.tmp` dir before building.
-5. **Checks storage** — estimates the output (~1.5×) and warns if it won't fit at the
+5. **Checks storage** and estimates the output (~1.5×) and warns if it won't fit at the
    destination.
-6. **Builds + appends** — then prints the result.
+6. **Builds + appends**, then prints the result.
 
 Example output:
 
@@ -204,7 +203,7 @@ Example output:
 ```
 
 For full manual control, `build`/`append` with explicit files still work exactly as
-before — `guide` is just a convenience wrapper over them.
+before; `guide` is just a convenience wrapper over them.
 
 ---
 
@@ -232,7 +231,7 @@ Peak RSS **8.71 GB** during build (chunked at ~5 GB per segment).
 | `.ulp` v1.26 (lazy dict decode) | 21,545 urls → 11,584,257 unique | **12.6 s** |
 
 That's **~49× faster than `.txt`** and **~7× faster than v1.00**. The `.ulp` match is
-also domain-precise — the grep number is inflated by whole-line hits like
+also domain-precise; the grep number is inflated by whole-line hits like
 `news.com/roblox-article`. Exact `query` lookups stay in the microseconds (binary
 search over the front-coded dictionary).
 
@@ -243,7 +242,7 @@ search over the front-coded dictionary).
 ```bash
 cargo build --release                             # binary: target/release/ulp (ulp.exe on Windows)
 
-./ulp --version                                    # ulp <crate version> (format <n>) — scripts pin this
+./ulp --version                                    # ulp <crate version> (format <n>); scripts pin this
 ./ulp --help                                       # subcommand + flag summary
 
 ./ulp build  db.ulp  in1.txt in2.txt ...            # new database from N files
@@ -265,7 +264,7 @@ cargo build --release                             # binary: target/release/ulp (
 
 `./ulp --version` prints `ulp <crate version> (format <format version>)`. The
 format version in the parentheses is the `.ulp` on-disk version written into
-every segment header — pin that number for index migration decisions, and bump
+every segment header. Pin that number for index migration decisions, and bump
 it only with a deliberate format change.
 
 `./ulp info db.ulp --json` prints the same stats as one JSON line with stable
@@ -293,20 +292,20 @@ the index itself succeeded. `guide` also removes its `{out}.split.tmp` dir.
 ## Format
 
 Fixed 128-byte header per **segment**, then sections:
-1. **URL dictionary** — unique **domains only** (scheme/www/path/subdomain stripped),
+1. **URL dictionary**: unique **domains only** (scheme/www/path/subdomain stripped),
    stored with **blocked front-coding** (shared prefixes compressed). Multi-part
    ccTLDs preserved (`site.co.uk`, `site.com.mx`).
-2. **Username dictionary** — stored **reversed** so shared email domains
+2. **Username dictionary**: stored **reversed** so shared email domains
    (`@gmail.com`) become shared prefixes and compress.
-3. **Password dictionary** — front-coded.
+3. **Password dictionary**: front-coded.
 4. **Record table** sorted by URL: `url_offsets` + `user_id`/`pass_id` columns + two
    separator bits (both `:` and `|` stored → byte-exact round-trip).
 5. **Inverted indexes** (user→records, pass→records): u32 offsets + delta-varint postings.
-6. **Misc section** — non-conforming lines kept verbatim (zero loss): under-delimited lines, `email:pa:ss` pairs (an @-bearing url field without a scheme parks instead of indexing a garbage user), and anything else the splitter cannot classify.
+6. **Misc section**: non-conforming lines kept verbatim (zero loss): under-delimited lines, `email:pa:ss` pairs (an @-bearing url field without a scheme parks instead of indexing a garbage user), and anything else the splitter cannot classify.
 
 The whole file is a **sequence of self-contained segments + a trailing footer**
 (the last 8 bytes point to the footer). `append` builds a new segment and writes it
-after the existing ones, updating only the footer — existing bytes are never re-read
+after the existing ones, updating only the footer; existing bytes are never re-read
 or rewritten, so **RAM and I/O are proportional to the new data alone** (a 1 TB store
 grown by appends never needs 1 TB of RAM).
 
@@ -315,8 +314,8 @@ grown by appends never needs 1 TB of RAM).
 Embedders that already hold parsed records (cred-parser) can skip the text
 parser entirely: `build_typed` / `append_typed` take an in-process iterator of
 `(url, user, pass)` byte triples and write the identical record/segment
-encoding as text rows — same dictionaries, same front-coding, same format
-version — so typed and text feeds merge into one store (a `:`-separated text
+encoding as text rows with the same dictionaries, same front-coding, and same format
+version, so typed and text feeds merge into one store (a `:`-separated text
 feed of the same field bytes builds a byte-identical file).
 
 ```rust
@@ -324,7 +323,7 @@ ulp::build_typed(rows, "db.ulp")?;        // rows: impl IntoIterator<Item = Type
 ulp::append_typed("db.ulp", more_rows)?;  // append a segment in place; same errors as `append`
 ```
 
-- `user` / `pass` bytes are stored exactly as given — `:` / `|` inside them
+- `user` / `pass` bytes are stored exactly as given; `:` / `|` inside them
   never splits the record (the text parser splits at the first two delimiter
   bytes, which silently mis-splits ~3 ppm of a real corpus: 7 rows in 3.5M,
   measured 2026-09-01).
@@ -340,14 +339,14 @@ ulp::append_typed("db.ulp", more_rows)?;  // append a segment in place; same err
 Dump contract: typed records store `:` for both separators, so `dump` emits
 `normalized_url:user:pass`. Records whose user field contains `:` or `|` (or
 whose normalized url contains `|`) dump their bytes verbatim, but such a line
-no longer re-splits into the original fields under the text parser — queries
+no longer re-splits into the original fields under the text parser; queries
 stay exact regardless (they resolve dictionary entries, never re-parsed dump
 text). The pass field always round-trips: it is everything after the second
 separator.
 
 ## Lookup path
 
-`query` memory-maps the file (mmap). The OS loads only touched pages — the whole file
+`query` memory-maps the file (mmap). The OS loads only touched pages; the whole file
 is never read. Lookup = binary search over the front-coded dictionary (~20 block
 probes) → postings offset jump → record columns → reconstruct. ~3 µs.
 
@@ -368,7 +367,7 @@ only: the `.ulp` format, command syntax, and output bytes are unchanged.
   record columns + postings (in 64 KB blocks) would push it toward ~2.3× while keeping
   random access.
 - Build RAM ∝ *unique* count (not file size), dominated by the username/password
-  dictionaries — use `guide` to chunk inputs to a RAM-appropriate size automatically.
+  dictionaries; use `guide` to chunk inputs to a RAM-appropriate size automatically.
 
 ---
 
@@ -379,22 +378,22 @@ big change (feature / port / major optimization).
 
 | version | what changed |
 |---|---|
-| **v1.58** | **Feature:** `--version` / `--help` on the bin — `--version` prints bin + crate + `.ulp` format version; `info --json` machine-readable stats with stable snake_case field names. |
+| **v1.58** | **Feature:** `--version` / `--help` on the bin: `--version` prints bin + crate + `.ulp` format version; `info --json` machine-readable stats with stable snake_case field names. |
 | **v1.57** | **Fix:** ad tokens spliced between a scheme and the path strip before the split; @-bearing url fields without a scheme (email pairs) park in misc instead of indexing a garbage user. |
-| **v1.56** | **Feature:** `--delete-raw` on build/append/guide — deletes raw input files after a successful index (directories and the `.ulp` output never touched; per-file failures print and continue). |
-| **v1.55** | **Refactor:** cargo crate — lib + bin split (edition 2024); the whole toolchain is now a reusable library, embedded by cred-parser. |
-| **v1.53** | **Feature:** `guide` subcommand — auto-detects RAM (Windows+Linux), picks a chunk size, expands folders, splits oversized files line-aligned, checks free space, then build+append. |
+| **v1.56** | **Feature:** `--delete-raw` on build/append/guide deletes raw input files after a successful index (directories and the `.ulp` output never touched; per-file failures print and continue). |
+| **v1.55** | **Refactor:** cargo crate: lib + bin split (edition 2024); the whole toolchain is now a reusable library, embedded by cred-parser. |
+| **v1.53** | **Feature:** `guide` subcommand: auto-detects RAM (Windows+Linux), picks a chunk size, expands folders, splits oversized files line-aligned, checks free space, then build+append. |
 | **v1.43** | **Perf:** dedup `HashSet` uses a passthrough `FoldHasher` (keys are already 128-bit hashes; drops the SipHash re-hash). |
 | **v1.42** | **Perf:** `query user`/`query pass` lazy decode (fix for common-password lookups); `info` now prints per-section byte sizes. |
-| **v1.41** | **Feature:** `match user prefix\|suffix` — search by email (suffix `@qq.com` is a fast reversed-dict prefix lookup, lazy decode of only referenced entries; ~190× faster than eager). |
+| **v1.41** | **Feature:** `match user prefix\|suffix`: search by email (suffix `@qq.com` is a fast reversed-dict prefix lookup, lazy decode of only referenced entries; ~190× faster than eager). |
 | **v1.30** | Docs: `dump` uses `-o` in the inspect section too. |
-| **v1.29** | **Feature:** `-o` / `--output` flag on `query`/`match`/`dump` — write results to a file directly (raw UTF-8, shell-independent; no PowerShell UTF-16 surprise). |
+| **v1.29** | **Feature:** `-o` / `--output` flag on `query`/`match`/`dump`: write results to a file directly (raw UTF-8, shell-independent; no PowerShell UTF-16 surprise). |
 | **v1.28** | Docs: platform-neutral commands (`./ulp` + Windows note); added the v1.26 row to the lookup benchmark table. |
 | **v1.27** | Docs: added changelog. |
-| **v1.26** | **Perf (big):** `match_one` lazy dictionary decode — decode only the user/pass entries referenced by matched records, not the whole multi-hundred-M-entry dictionaries. `match contains` is **~7–10× faster**, byte-identical output (spaggiari 21.8s → 2.2s; roblox 86.8s → 12.6s). |
+| **v1.26** | **Perf (big):** `match_one` lazy dictionary decode: decode only the user/pass entries referenced by matched records, not the whole multi-hundred-M-entry dictionaries. `match contains` is **~7–10× faster**, byte-identical output (spaggiari 21.8s → 2.2s; roblox 86.8s → 12.6s). |
 | **v1.16** | **Bug fixes (4):** `segments_of` bounds-check on the footer offset table (malformed `.ulp` no longer panics); `parse_header` length guard (truncated `.ulp` → clean diagnostic); `merge` sorts the user dict by reversed key (fixes `query user` returning "no match" on merged files); `merge` dedup compares separator bytes (no delimiter-only data loss). |
-| **v1.12** | **Docs:** README — Linux section reflects native `#[cfg]` cross-platform; documented dedup + `found`/`dupes`/`saved`. |
-| **v1.11** | **Big:** cross-platform (Windows + Linux) via `#[cfg]` — ported `mmap.rs` (CreateFileMappingW ↔ POSIX `mmap`) and `peak_rss_gb` (psapi ↔ `/proc/self/status`). |
+| **v1.12** | **Docs:** README Linux section reflects native `#[cfg]` cross-platform; documented dedup + `found`/`dupes`/`saved`. |
+| **v1.11** | **Big:** cross-platform (Windows + Linux) via `#[cfg]`: ported `mmap.rs` (CreateFileMappingW ↔ POSIX `mmap`) and `peak_rss_gb` (psapi ↔ `/proc/self/status`). |
 | **v1.01** | **Feature:** auto-dedup search results (128-bit content hash) + `found`/`dupes`/`saved` stats on every query/match. |
 | **v1.00** | Initial release: `.ulp` format, build/append/query/match/dump/info, blocked front-coding + delta-varint compression, mmap lookup. |
 
