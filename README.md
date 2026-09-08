@@ -62,8 +62,8 @@ cargo build --release
   (Linux); its free-space check uses `GetDiskFreeSpaceExW` (Windows) and `statvfs`
   (Linux).
 
-The repo is a **library crate plus a thin CLI shim**: the whole toolchain
-(build/query/merge/guide/…) is `pub` in the lib, and cred-parser embeds the same
+The repo is a library plus a small CLI. The full toolchain
+(build/query/merge/guide/…) is `pub` in the library, and cred-parser embeds the same
 code as its `ulp` subcommand group.
 
 ---
@@ -111,7 +111,7 @@ Every query returns full, byte-exact `url:user:pass` lines. Results are **dedupl
 
 ### Save results to a file
 
-The cleanest, shell-independent way is the `-o` flag; the tool writes the file
+The easiest shell-independent way is the `-o` flag; the tool writes the file
 itself as raw UTF-8, bypassing the shell's redirection entirely:
 
 ```bash
@@ -137,8 +137,7 @@ byte-exactly, so a user containing `:` or `|` survives intact. Misc lines
 have no url/user/pass fields, so they have no frame shape and are skipped in
 frames mode; when a store holds any, `dump --frames` prints one stderr
 warning naming the count (`ulp: frames dump skips N misc rows (no frame
-shape); text dump shows them`), a loud warning, never a failure. Text output
-remains the default and is unchanged.
+shape); text dump shows them`). Text output remains the default and is unchanged.
 
 ### Inspect / rebuild / benchmark
 
@@ -202,8 +201,8 @@ Example output:
 [guide] split parts left in db.ulp.split.tmp (safe to delete)
 ```
 
-For full manual control, `build`/`append` with explicit files still work exactly as
-before; `guide` is just a convenience wrapper over them.
+For more control, `build`/`append` with explicit files still work the same;
+`guide` is just a convenience wrapper over them.
 
 ---
 
@@ -352,16 +351,16 @@ probes) → postings offset jump → record columns → reconstruct. ~3 µs.
 
 ## Implementation notes
 
-The current hot path reuses scratch buffers for dictionary search and record
-reconstruction, stores dedup slots compactly, batches build writes, sorts merge
-runs through contiguous arenas, streams posting blobs through temporary files,
-and validates repair metadata with buffered reads. These are internal changes
-only: the `.ulp` format, command syntax, and output bytes are unchanged.
+The current implementation reuses buffers during lookup and record output,
+keeps dedup metadata compact, batches writes, sorts merge runs in one arena,
+streams postings through temporary files, and buffers repair checks. This only
+changes internal work. The `.ulp` format, command syntax, and output bytes stay
+the same.
 
 ## Notes / tradeoffs
 
-- **URL → domain** is a deliberate, user-requested lossy step (only `domain.extension`
-  is kept). Username, password, separators, and misc lines are byte-exact. An ad token spliced between a scheme and the path (`https: Engineer: @logsadm //host:...`) strips before the split: the record reconstructs without the junk, the credential itself stays byte-exact.
+- **URL → domain** intentionally keeps only the registrable domain. Usernames,
+  passwords, separators, and misc lines are preserved byte-for-byte. An ad token spliced between a scheme and the path (`https: Engineer: @logsadm //host:...`) is stripped before the split, so the record reconstructs without the junk while the credential itself stays byte-for-byte.
 - Compression is below gzip/zstd (~4×) because `.ulp` trades a little ratio for **O(1)
   indexed lookup**; gzip has no random access. An order-1 Huffman/range-coder over the
   record columns + postings (in 64 KB blocks) would push it toward ~2.3× while keeping
